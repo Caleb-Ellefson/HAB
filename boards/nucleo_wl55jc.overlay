@@ -1,0 +1,15 @@
+/ {
+    aliases {
+        lora0 = &lora;
+    };
+};
+
+&lora {
+    status = "okay";
+    /* Use the correct enum strings for STM32WL */
+    power-amplifier-output = "rfo-hp"; 
+    
+    antenna-enable-gpios = <&gpioc 4 GPIO_ACTIVE_HIGH>,  /* FE_CTRL1 */
+                           <&gpioc 5 GPIO_ACTIVE_HIGH>,  /* FE_CTRL2 */
+                           <&gpioc 3 GPIO_ACTIVE_HIGH>;  /* FE_CTRL3 */
+};
