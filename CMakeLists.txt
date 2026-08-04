@@ -9,4 +9,5 @@ target_include_directories(app PRIVATE src/include)
 target_sources(app PRIVATE
     src/main.c
     src/lora.c
+    src/sensors.c
 )

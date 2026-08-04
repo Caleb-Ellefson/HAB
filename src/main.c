@@ -1,11 +1,15 @@
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include "flight_data.h"
 
 #ifdef CONFIG_LORA
 #include "lora.h"
 #endif
 
 LOG_MODULE_REGISTER(main);
+
+flight_data_t curr_flight_data;
+K_MUTEX_DEFINE(flight_data_mutex);
 
 int main(void) {
 
