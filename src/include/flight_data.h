@@ -10,6 +10,9 @@ typedef struct __attribute__((packed)){
     float f_pressure;
     float f_humidity;
     float f_altitude;
+    float f_ACCEL_X;
+    float f_ACCEL_Y;
+    float f_ACCEL_Z;
     double d_latitude;
     double d_longitude;
     struct rtc_time rtc_time;
