@@ -2,8 +2,8 @@
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/sensor.h>
+#include <zephyr/drivers/rtc.h>
 #include "flight_data.h"
-#include <zephyr/sys/printk.h>
 
 #ifdef CONFIG_BME280
 
@@ -36,10 +36,27 @@ int read_bme280(const struct device *bme280, flight_data_t *data)
     data->f_pressure = sensor_value_to_float(&press) * 10.0f;
     data->f_humidity = sensor_value_to_float(&hum);
 
+    const struct device *rtc = DEVICE_DT_GET(DT_ALIAS(rtc));
+
+    if (device_is_ready(rtc)) {
+        struct rtc_time rtc_tm;
+
+        rtc_get_time(rtc, &rtc_tm);
+        data->rtc_time = rtc_tm;
+    }
+
 #ifdef CONFIG_DEBUG
-    printk("temp: %f\n", (double)data->f_internal_tmp);
-    printk("pressure: %f\n", (double)data->f_pressure);
-    printk("humidity: %f\n", (double)data->f_humidity);
+    printk("[%04u-%02u-%02u %02u:%02u:%02u] ",
+           (unsigned)(data->rtc_time.tm_year + 1900),
+           (unsigned)(data->rtc_time.tm_mon + 1),
+           (unsigned)data->rtc_time.tm_mday,
+           (unsigned)data->rtc_time.tm_hour,
+           (unsigned)data->rtc_time.tm_min,
+           (unsigned)data->rtc_time.tm_sec);
+    printk("temp: %.1f pressure: %.1f humidity: %.1f\n",
+           (double)data->f_internal_tmp,
+           (double)data->f_pressure,
+           (double)data->f_humidity);
 #endif
     return 0;
 }
@@ -51,7 +68,7 @@ void update_flight_data(const flight_data_t *local_data)
     curr_flight_data.f_internal_tmp = local_data->f_internal_tmp;
     curr_flight_data.f_pressure     = local_data->f_pressure;
     curr_flight_data.f_humidity     = local_data->f_humidity;
-    curr_flight_data.timestamp      = local_data->timestamp;
+    curr_flight_data.rtc_time       = local_data->rtc_time;
     
     k_mutex_unlock(&flight_data_mutex);
 }

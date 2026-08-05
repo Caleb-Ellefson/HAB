@@ -1,6 +1,7 @@
 #pragma once
 #include <stdint.h>
 #include <zephyr/kernel.h>
+#include <zephyr/drivers/rtc.h>
 
 /* Remove padding */
 typedef struct __attribute__((packed)){
@@ -11,7 +12,7 @@ typedef struct __attribute__((packed)){
     float f_altitude;
     double d_latitude;
     double d_longitude;
-    uint32_t timestamp;
+    struct rtc_time rtc_time;
 } flight_data_t;
 
 extern flight_data_t curr_flight_data;
