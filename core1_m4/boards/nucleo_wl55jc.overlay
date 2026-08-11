@@ -1,0 +1,85 @@
+/ {
+	chosen {
+		zephyr,code-partition = &slot0_partition;
+		zephyr,sram = &sram0;
+	};
+
+	aliases {
+		lora0 = &lora;
+	};
+
+	/* Shared SRAM region for IPCC / Dual-Core IPC */
+	reserved-memory {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		ranges;
+
+		/* Carve out 4KB at 0x2000C000 for IPC */
+		ipc_shm: memory@2000c000 {
+			compatible = "zephyr,memory-region";
+			reg = <0x2000c000 DT_SIZE_K(4)>;
+			zephyr,memory-region = "IPC_SHM";
+		};
+	};
+};
+
+/* Delete the board's default flash partition */
+&flash0 {
+	/delete-node/ partitions;
+};
+
+&flash0 {
+	partitions {
+		compatible = "fixed-partitions";
+		#address-cells = <1>;
+		#size-cells = <1>;
+
+		/* Core 1 (Zephyr M4) - 128KB */
+		slot0_partition: partition@0 {
+			label = "image-0";
+			reg = <0x00000000 DT_SIZE_K(128)>;
+		};
+
+		/* Core 2 (Bare-Metal M0+) - 128KB */
+		core2_partition: partition@20000 {
+			label = "core2-code";
+			reg = <0x00020000 DT_SIZE_K(128)>;
+		};
+	};
+};
+
+/* Restrict SRAM0 for Core 1 */
+&sram0 {
+	reg = <0x20000000 DT_SIZE_K(48)>;
+};
+
+&lora {
+	status = "okay";
+	power-amplifier-output = "rfo-hp"; 
+	
+	antenna-enable-gpios = <&gpioc 4 GPIO_ACTIVE_HIGH>,  /* FE_CTRL1 */
+			       <&gpioc 5 GPIO_ACTIVE_HIGH>,  /* FE_CTRL2 */
+			       <&gpioc 3 GPIO_ACTIVE_HIGH>;  /* FE_CTRL3 */
+};
+
+&i2c2 {
+	status = "okay";
+	clock-frequency = <I2C_BITRATE_FAST>;
+
+	bme280: bme280@76 {
+		compatible = "bosch,bme280";
+		reg = <0x76>;
+		status = "okay";
+	};
+
+	/* CS high = 0x53 low = 0x1D */
+	ADXL375: ADXL375@53 {
+		compatible = "adi,adxl375";
+		reg = <0x53>;
+		status = "okay";
+	};
+};
+
+&rtc {
+	status = "okay";
+};
